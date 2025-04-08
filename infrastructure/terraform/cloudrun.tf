@@ -7,10 +7,11 @@ resource "google_cloud_run_service" "veroxe_api" {
       containers {
         image = var.container_image
       }
+      timeout_seconds = 60 # Adjust this value as needed (in seconds)
     }
   }
 
-  traffics {
+  traffic {
     percent         = 100
     latest_revision = true
   }
