@@ -9,6 +9,13 @@ resource "google_cloud_run_service" "veroxe_api" {
       }
       timeout_seconds = 60 # Adjust this value as needed (in seconds)
     }
+    metadata {
+      annotations = {
+        "run.googleapis.com/startup-cpu-boost"    = "true"
+        "run.googleapis.com/execution-environment" = "gen2"
+        "run.googleapis.com/container-timeout-seconds" = "600"
+      }
+    }
   }
 
   traffic {
