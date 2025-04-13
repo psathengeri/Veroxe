@@ -21,7 +21,26 @@ resource "google_project_service" "required" {
     "bigquery.googleapis.com",
     "pubsub.googleapis.com",
     "run.googleapis.com",
-    "vertexai.googleapis.com"
+    "aiplatform.googleapis.com"
   ])
   service = each.key
+}
+
+resource "google_service_account" "vertexai_sa" {
+  account_id   = "vertexai-sa"
+  display_name = "Vertex AI Custom Service Account"
+  project      = var.project_id
+}
+
+resource "google_project_iam_member" "vertexai_sa_role" {
+  project = var.project_id
+  role    = "roles/aiplatform.admin"
+  member  = "serviceAccount:${google_service_account.vertexai_sa.email}"
+}
+
+# Optional: Grant additional permissions if needed
+resource "google_project_iam_member" "vertexai_sa_storage" {
+  project = var.project_id
+  role    = "roles/storage.admin"
+  member  = "serviceAccount:${google_service_account.vertexai_sa.email}"
 }
