@@ -1,2 +1,6 @@
 google-cloud-storage
 google-cloud-pubsub
+jsonschema
+pandas
+google-cloud-bigquery
+
