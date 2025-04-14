@@ -1,0 +1,28 @@
+[
+    {
+      "name": "timestamp",
+      "type": "TIMESTAMP",
+      "mode": "REQUIRED"
+    },
+    {
+      "name": "client_id",
+      "type": "STRING",
+      "mode": "REQUIRED"
+    },
+    {
+      "name": "filename",
+      "type": "STRING",
+      "mode": "REQUIRED"
+    },
+    {
+      "name": "error_type",
+      "type": "STRING",
+      "mode": "REQUIRED"
+    },
+    {
+      "name": "error_details",
+      "type": "STRING",
+      "mode": "REQUIRED"
+    }
+  ]
+  

@@ -1,62 +1,69 @@
-import os
 import json
+import logging
 from google.cloud import storage
-from google.cloud import pubsub_v1
+from jsonschema import validate, ValidationError
+from logger import log_validation_error  # Logs to BigQuery
 
-# Set your bucket and topic info here
-BUCKET_NAME = "ml-dataset-veroxe"
-PROCESSED_PREFIX = "uploads/processed/"
-PENDING_PREFIX = "uploads/pending/"
-PUBSUB_TOPIC = "data-upload-topic"
-PROJECT_ID = "mlops-veroxe"
-
+# GCS client
 storage_client = storage.Client()
-publisher = pubsub_v1.PublisherClient()
 
-def validate_file(data, context):
-    file_name = data["name"]
-    if not file_name.startswith(PENDING_PREFIX):
-        print(f"Ignoring file outside pending/: {file_name}")
+# Configs
+SCHEMA_BUCKET = "ml-dataset-veroxe"
+SCHEMA_FOLDER = "schemas"
+PROCESSED_FOLDER = "uploads/processed"
+
+def load_schema(schema_name: str, client_id: str):
+    """Load the JSON schema from the GCS schema folder for a specific client."""
+    bucket = storage_client.bucket(SCHEMA_BUCKET)
+    schema_path = f"{SCHEMA_FOLDER}/{client_id}/{schema_name}"
+    blob = bucket.blob(schema_path)
+
+    schema_str = blob.download_as_text()
+    return json.loads(schema_str)
+
+def validate_file(event, context):
+    """Triggered by a finalized file in GCS."""
+    bucket_name = event['bucket']
+    file_name = event['name']
+
+    if not file_name.startswith("uploads/pending/"):
+        logging.info(f"Skipping non-pending file: {file_name}")
         return
 
-    print(f"Processing file: {file_name}")
-    bucket = storage_client.bucket(BUCKET_NAME)
+    client_id = file_name.split("/")[1]
+    logging.info(f"Processing file: {file_name} for client: {client_id}")
+
+    # Download the file content
+    bucket = storage_client.bucket(bucket_name)
     blob = bucket.blob(file_name)
+    file_contents = blob.download_as_text()
 
-    # Basic validations
-    if not file_name.endswith(".csv"):
-        print(f"Invalid file format: {file_name}")
+    try:
+        json_data = json.loads(file_contents)
+    except json.JSONDecodeError:
+        logging.error(f"Invalid JSON format in {file_name}")
+        log_validation_error(client_id, file_name, "Invalid JSON", "JSON Decode Error")
         return
 
-    if blob.size > 10 * 1024 * 1024:  # Limit: 10MB
-        print(f"File too large: {file_name}")
-        return
+    # Assume schema file is named like: sensor_readings.schema.json
+    schema_name = file_name.split("/")[-1].replace(".json", ".schema.json")
 
-    # Read file content to validate schema
-    contents = blob.download_as_text()
-    header = contents.split("\n")[0].strip()
-    expected_columns = {"id", "timestamp", "value"}  # Example schema
-    uploaded_columns = set(header.split(","))
+    try:
+        schema = load_schema(schema_name, client_id)
+        validate(instance=json_data, schema=schema)
+        logging.info(f"Validation passed for {file_name}")
 
-    if not expected_columns.issubset(uploaded_columns):
-        print(f"Schema mismatch in {file_name}: {uploaded_columns}")
-        return
+        # Move file to uploads/processed/
+        new_blob = bucket.copy_blob(
+            blob, bucket, file_name.replace("uploads/pending/", f"{PROCESSED_FOLDER}/")
+        )
+        blob.delete()
+        logging.info(f"Moved {file_name} to {new_blob.name}")
 
-    # Move to uploads/processed/
-    new_name = file_name.replace(PENDING_PREFIX, PROCESSED_PREFIX)
-    new_blob = bucket.copy_blob(blob, bucket, new_name)
-    blob.delete()
+    except ValidationError as ve:
+        logging.error(f"Validation failed for {file_name}: {ve.message}")
+        log_validation_error(client_id, file_name, "Schema Validation Error", ve.message)
 
-    print(f"File {file_name} moved to {new_name}")
-
-    # Optional: Publish to Pub/Sub
-    event_data = {
-        "file_name": new_name,
-        "bucket": BUCKET_NAME,
-        "status": "validated"
-    }
-    publisher.publish(
-        f"projects/{PROJECT_ID}/topics/{PUBSUB_TOPIC}",
-        json.dumps(event_data).encode("utf-8"),
-    )
-    print(f"Published message to Pub/Sub for {new_name}")
+    except Exception as e:
+        logging.error(f"Unexpected error processing {file_name}: {str(e)}")
+        log_validation_error(client_id, file_name, "Unexpected Error", str(e))
