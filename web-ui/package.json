@@ -39,7 +39,7 @@
     ]
   },
   "resolutions": {
-    "loader-utils": "^3.2.1",
+    "loader-utils": "2.0.4",
     "shell-quote": "^1.8.1",
     "cross-spawn": "^7.0.3",
     "http-proxy-middleware": "^2.0.6",
@@ -56,7 +56,7 @@
     "postcss": "^8.4.31"
   },
   "overrides": {
-    "loader-utils": "^3.2.1",
+    "loader-utils": "2.0.4",
     "shell-quote": "^1.8.1",
     "cross-spawn": "^7.0.3",
     "http-proxy-middleware": "^2.0.6",
