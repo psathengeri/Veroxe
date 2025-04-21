@@ -1,24 +1,36 @@
-# Python
+# Python virtual environment
+veroxe/
+venv/
+env/
+.env/
+
+# Python cache files
 __pycache__/
 *.py[cod]
+*$py.class
+
+# Distribution / packaging
+dist/
+build/
 *.egg-info/
+
+# IDE settings
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+
+# Node
+node_modules/
 .env
 .env.*
 *.db
 *.sqlite3
 *.joblib
 *.h5
-
-# Node
-node_modules/
-build/
-dist/
-.next/
-out/
-
-# OS
-.DS_Store
-Thumbs.db
 
 # Logs
 *.log
