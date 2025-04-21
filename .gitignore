@@ -48,3 +48,22 @@ node_modules/
 
 # Secrets (just in case)
 secrets.yaml
+
+# PyTorch and large binary files
+*.pt
+*.pth
+*.onnx
+*.dylib
+*.so
+*.dll
+*.bin
+*.pkl
+*.model
+
+# Large media files
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.mp3
+*.wav
