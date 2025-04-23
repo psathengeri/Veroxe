@@ -43,3 +43,7 @@ variable "vertex_featurestore_name" {
   type        = string
   default     = "veroxe-featurestore"
 }
+variable "vertex_service_account" {
+  description = "Service account email used for the Vertex Notebook"
+  type        = string
+}
