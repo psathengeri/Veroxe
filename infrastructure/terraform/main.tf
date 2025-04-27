@@ -21,26 +21,37 @@ resource "google_project_service" "required" {
     "bigquery.googleapis.com",
     "pubsub.googleapis.com",
     "run.googleapis.com",
-    "aiplatform.googleapis.com"
+    "aiplatform.googleapis.com",
+    "dataflow.googleapis.com",
+    "cloudfunctions.googleapis.com",
+    "monitoring.googleapis.com",
+    "dataprep.googleapis.com",
+    "notebooks.googleapis.com",
+    "artifactregistry.googleapis.com",
+    "servicenetworking.googleapis.com"
   ])
   service = each.key
+  disable_on_destroy = false
 }
 
-resource "google_service_account" "vertexai_sa" {
-  account_id   = "vertexai-sa"
-  display_name = "Vertex AI Custom Service Account"
+resource "google_service_account" "veroxe_sa" {
+  account_id   = "veroxe-service-account"
+  display_name = "Veroxe ML Service Account"
   project      = var.project_id
 }
 
-resource "google_project_iam_member" "vertexai_sa_role" {
+# Grant necessary IAM roles
+resource "google_project_iam_member" "veroxe_sa_roles" {
+  for_each = toset([
+    "roles/aiplatform.user",
+    "roles/storage.admin",
+    "roles/bigquery.admin",
+    "roles/dataflow.developer",
+    "roles/pubsub.publisher",
+    "roles/pubsub.subscriber",
+    "roles/run.invoker"
+  ])
   project = var.project_id
-  role    = "roles/aiplatform.admin"
-  member  = "serviceAccount:${google_service_account.vertexai_sa.email}"
-}
-
-# Optional: Grant additional permissions if needed
-resource "google_project_iam_member" "vertexai_sa_storage" {
-  project = var.project_id
-  role    = "roles/storage.admin"
-  member  = "serviceAccount:${google_service_account.vertexai_sa.email}"
+  role    = each.key
+  member  = "serviceAccount:${google_service_account.veroxe_sa.email}"
 }
