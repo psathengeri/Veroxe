@@ -1,7 +1,0 @@
-# Updated secure versions for vulnerable packages
-torch>=2.2.1  # Fixes multiple vulnerabilities including RCE and buffer overflow
-transformers>=4.38.1  # Fixes deserialization and ReDoS vulnerabilities
-notebook>=7.0.7  # Fixes sensitive data exposure and token bruteforcing
-scikit-learn>=1.4.0  # Fixes data leakage vulnerability
-
-# ... existing code ...
