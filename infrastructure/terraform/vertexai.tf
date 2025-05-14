@@ -20,10 +20,15 @@ resource "google_vertex_ai_featurestore" "veroxe_featurestore" {
 }
 */
 
+resource "random_id" "endpoint_suffix" {
+  byte_length = 4
+}
+
 resource "google_vertex_ai_endpoint" "model_endpoint" {
-  name         = "veroxe-model-endpoint"
+  name         = "veroxe-model-endpoint-${random_id.endpoint_suffix.hex}"
   display_name = "Veroxe Model Endpoint"
   location     = var.region
+
   
   # Remove network configuration for now as it's optional
   # network      = "projects/${var.project_number}/global/networks/default"
