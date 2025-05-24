@@ -67,3 +67,23 @@ secrets.yaml
 *.mkv
 *.mp3
 *.wav
+
+# Credentials and secrets
+credentials/
+*.json
+!package.json
+!package-lock.json
+!tsconfig.json
+!jsconfig.json
+*.pem
+*.key
+*.crt
+*.cer
+*.der
+*.p12
+*.pfx
+*.p8
+*.key
+*.env
+.env*
+!.env.example

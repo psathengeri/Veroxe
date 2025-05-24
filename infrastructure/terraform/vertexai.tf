@@ -114,3 +114,12 @@ resource "google_dataflow_job" "preprocessing_pipeline" {
   zone = var.zone
 }
 
+# Initialize model monitoring
+monitor = ModelMonitor()
+
+# Initialize client router
+router = ClientRouter()
+
+# Create monitoring tables
+create_monitoring_tables()
+
